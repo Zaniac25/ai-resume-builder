@@ -1,23 +1,27 @@
-import React, { use, useEffect, useState } from 'react'
+import React, { use, useContext, useEffect, useState } from 'react'
 import { Input } from '../../../../../components/ui/input'
 import { Button } from '../../../../../components/ui/button'
 import RichTextEditor from '../../../../../components/RichTextEditor'
+import { ResumeInfoContext } from '../../../../../context/ResumeInfoContext'
+
 
 
 const formField = {
   title: "",
-  companyname: "",
+  companyName: "",
   city: "",
   state: "",
   startDate: "",
-  ensDate: "",
+  endDate: "",
   workSummery: ""
 }
 
 function Experience() {
   const [experienceList, setExperienceList] = useState([
     formField
-  ])
+  ]);
+
+  const { resumeInfo, setResumeInfo } =useContext(ResumeInfoContext);
 
   const handleChange = (index, event) => {
     const newEntries = experienceList.slice();
@@ -34,8 +38,17 @@ function Experience() {
     setExperienceList(experienceList.slice(0, -1));
   }
 
+  const handleRichTextEditor = (e,name,index) => {
+    const newEntries = experienceList.slice();
+    newEntries[index][name] = e.target.value;
+    setExperienceList(newEntries);
+  }
+
   useEffect(() => { 
-    console.log(experienceList);
+    setResumeInfo({
+      ...resumeInfo,
+      experience:experienceList
+    });
   }, [experienceList])
 
   return (
@@ -93,13 +106,15 @@ function Experience() {
                   <label className="text-sm">End Date</label>
                   <Input
                     type="date"
-                    name="ensDate"
+                    name="endDate"
                     onChange={(event) => handleChange(index, event)}
                   />
                 </div>
                 <div className="col-span-2">
                   {/* {Work Summery} */}
-                  <RichTextEditor />
+                  <RichTextEditor 
+                    onRichTextEditorChange={(event)=> handleRichTextEditor(event, 'workSummery',index)}
+                  />
                 </div>
               </div>
             </div>
