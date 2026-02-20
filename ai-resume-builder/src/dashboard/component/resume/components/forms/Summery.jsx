@@ -6,7 +6,7 @@ import { useParams } from "react-router-dom";
 import GlobalApi from "../../../../../../service/GlobalApi";
 import { Brain, LoaderCircle } from "lucide-react";
 import { toast } from "sonner";
-import { AIChatSession } from "../../../../../../service/AIModel"; // ✅ same as video
+import { AIChatSession } from "../../../../../../service/AIModel"; 
 
 function Summery({ enabledNext }) {
   const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
@@ -22,7 +22,7 @@ function Summery({ enabledNext }) {
       });
   }, [Summery]);
 
-  // ✅ Function name and logic same as video
+  
   const GenerateSummaryFromAI = async () => {
     setLoading(true);
     const prompt = `Job Title: ${
@@ -41,7 +41,7 @@ function Summery({ enabledNext }) {
     }
   };
 
-  // ✅ Save same as in video
+ 
   const onSave = (e) => {
     e.preventDefault();
     setLoading(true);
@@ -81,7 +81,7 @@ function Summery({ enabledNext }) {
               type="button"
               size="sm"
               className="border-primary text-primary flex gap-2"
-              onClick={GenerateSummaryFromAI} // ✅ same as video
+              onClick={GenerateSummaryFromAI} 
               disabled={loading}
             >
               {loading ? (

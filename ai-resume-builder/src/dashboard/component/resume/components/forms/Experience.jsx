@@ -3,6 +3,9 @@ import { Input } from '../../../../../components/ui/input'
 import { Button } from '../../../../../components/ui/button'
 import RichTextEditor from '../../../../../components/RichTextEditor'
 import { ResumeInfoContext } from '../../../../../context/ResumeInfoContext'
+import { useParams } from 'react-router-dom'
+import GlobalApi from '../../../../../../service/GlobalApi' 
+import { toast } from 'sonner'
 
 
 
@@ -17,11 +20,14 @@ const formField = {
 }
 
 function Experience() {
+
   const [experienceList, setExperienceList] = useState([
-    formField
+    {...formField}
   ]);
 
-  const { resumeInfo, setResumeInfo } =useContext(ResumeInfoContext);
+  const { resumeInfo, setResumeInfo } = useContext(ResumeInfoContext);
+  
+  const params = useParams();
 
   const handleChange = (index, event) => {
     const newEntries = experienceList.slice();
@@ -31,7 +37,7 @@ function Experience() {
   }
 
   const AddNewExperience = () => { 
-    setExperienceList([...experienceList, formField]);
+    setExperienceList([...experienceList, { ...formField }]);
   }
 
   const RemoveExperience = () => { 
@@ -43,6 +49,25 @@ function Experience() {
     newEntries[index][name] = e.target.value;
     setExperienceList(newEntries);
   }
+
+  const onSave = () => {
+    const data = {
+      data: {
+        experience: experienceList,
+      },
+    };
+
+    GlobalApi.UpdateResumeDetail(params?.resumeId, data).then(
+      (resp) => {
+        console.log(resp);
+        toast.success("Experience Updated Successfully...");
+      },
+      (error) => {
+        console.error(error);
+        toast.error("Error saving experience.");
+      },
+    );
+  };
 
   useEffect(() => { 
     setResumeInfo({
@@ -112,8 +137,11 @@ function Experience() {
                 </div>
                 <div className="col-span-2">
                   {/* {Work Summery} */}
-                  <RichTextEditor 
-                    onRichTextEditorChange={(event)=> handleRichTextEditor(event, 'workSummery',index)}
+                  <RichTextEditor
+                    index={index}
+                    onRichTextEditorChange={(event) =>
+                      handleRichTextEditor(event, "workSummery", index)
+                    }
                   />
                 </div>
               </div>
@@ -121,7 +149,7 @@ function Experience() {
           ))}
         </div>
         <div className="flex justify-between">
-          <div className='flex gap-5'>
+          <div className="flex gap-5">
             <Button
               variant="outline"
               onClick={AddNewExperience}
@@ -132,11 +160,12 @@ function Experience() {
             <Button
               variant="outline"
               onClick={RemoveExperience}
-              className="border-black">
+              className="border-black"
+            >
               - Remove
             </Button>
           </div>
-          <Button>Save</Button>
+          <Button onClick={onSave}>Save</Button>
         </div>
       </div>
     </div>

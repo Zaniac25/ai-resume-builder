@@ -1,36 +1,98 @@
-import React, { useState } from "react";
-import { EditorProvider } from "react-simple-wysiwyg";
-import { Editor } from "react-simple-wysiwyg";
-import { Toolbar } from "react-simple-wysiwyg";
-import { BtnBold } from "react-simple-wysiwyg";
-import { BtnItalic } from "react-simple-wysiwyg";
-import { BtnUnderline } from "react-simple-wysiwyg";
-import { BtnStrikeThrough } from "react-simple-wysiwyg";
-import { Separator } from "react-simple-wysiwyg";
-import { BtnNumberedList } from "react-simple-wysiwyg";
-import { BtnBulletList } from "react-simple-wysiwyg";
-import { BtnLink } from "react-simple-wysiwyg";
-import { BtnClearFormatting } from "react-simple-wysiwyg";
-import { HtmlButton } from "react-simple-wysiwyg";
-import { BtnStyles } from "react-simple-wysiwyg";
-import { Brain } from "lucide-react";
+import React, { useContext, useState } from "react";
+import {
+  EditorProvider,
+  Editor,
+  Toolbar,
+  BtnBold,
+  BtnItalic,
+  BtnUnderline,
+  BtnStrikeThrough,
+  Separator,
+  BtnNumberedList,
+  BtnBulletList,
+  BtnLink,
+} from "react-simple-wysiwyg";
+import { Brain, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ResumeInfoContext } from "../context/ResumeInfoContext";
+import { toast } from "sonner";
+import { AIChatSession } from "../../service/AIModel"; // ✅ FIX THIS PATH if needed
 
-function RichTextEditor({ onRichTextEditorChange }) {
-  const [value, setValue] = useState();
-  
+const PROMPT = `
+Position Title: {positionTitle}
+Generate 5-7 strong, professional resume bullet points for experience.
+Use action verbs and make them ATS-friendly.
+Return ONLY clean HTML using <ul> and <li> tags.
+`;
+
+function RichTextEditor({ onRichTextEditorChange, index }) {
+  const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { resumeInfo } = useContext(ResumeInfoContext);
+
+  const GenerateSummeryFromAI = async () => {
+    if (!resumeInfo.experience[index]?.title) {
+      toast("Please Add Position Title first");
+      return;
+    }
+
+    setLoading(true);
+
+    const prompt = PROMPT.replace(
+      "{positionTitle}",
+      resumeInfo.experience[index].title,
+    );
+
+    try {
+      const response = await AIChatSession(prompt);
+
+      // ✅ Set editor content
+      setValue(response);
+
+      // ✅ Update parent state
+      onRichTextEditorChange({
+        target: { value: response },
+      });
+
+      toast("AI Generated Experience Successfully!");
+    } catch (error) {
+      console.error("AI Error:", error);
+      toast("Something went wrong while generating experience.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
-      <div>
-        <label className="text-xs">Summery</label>
-        <Button variant="outline" size="sm" className="flex gap-2 border-primary text-primary"><Brain className="h-4 w-4/> Generate from AI </Button>
+      <div className="flex justify-between my-2">
+        <label className="text-xs">Experience Summary</label>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={GenerateSummeryFromAI}
+          disabled={loading}
+          className="flex gap-2 border-primary text-primary"
+        >
+          {loading ? (
+            <LoaderCircle className="animate-spin h-4 w-4" />
+          ) : (
+            <>
+              <Brain className="h-4 w-4" />
+              Generate from AI
+            </>
+          )}
+        </Button>
       </div>
+
       <EditorProvider>
         <Editor
           value={value}
           onChange={(e) => {
             setValue(e.target.value);
-            onRichTextEditorChange(e)
+            onRichTextEditorChange(e);
           }}
         >
           <Toolbar>
